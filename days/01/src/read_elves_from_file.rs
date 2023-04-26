@@ -4,7 +4,7 @@ use std::path::Path;
 use thiserror::Error;
 
 use crate::elf::Elf;
-use crate::food::{Food, self};
+use crate::food::Food;
 
 #[derive(Debug, Error)]
 pub enum ElfParserError {
@@ -18,14 +18,14 @@ pub fn read_elves_from_file(filename: &str) -> Result<Vec<Elf>, ElfParserError> 
     let mut elves = vec![];
     let mut lines = read_lines(filename)?;
 
-    while let Some(elf) = read_next_elf(&mut lines)? {
+    while let Some(elf) = read_elf_from_lines(&mut lines)? {
         elves.push(elf);
     }
 
     Ok(elves)
 }
 
-fn read_next_elf<B:  BufRead>(lines: &mut Lines<B>) -> Result<Option<Elf>, ElfParserError> {
+fn read_elf_from_lines<B: BufRead>(lines: &mut Lines<B>) -> Result<Option<Elf>, ElfParserError> {
     let mut food_items = vec![];
 
     for line in lines {
