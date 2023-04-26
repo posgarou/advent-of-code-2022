@@ -14,3 +14,12 @@ impl From<i32> for Food {
         Food { calories }
     }
 }
+
+impl TryFrom<String> for Food {
+    type Error = std::num::ParseIntError;
+
+    fn try_from(calories: String) -> Result<Self, Self::Error> {
+        let calories = calories.parse()?;
+        Ok(Food { calories })
+    }
+}

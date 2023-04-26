@@ -1,9 +1,10 @@
 use std::fs::File;
-use std::io::{self, BufRead};
+use std::io::{self, BufRead, Lines};
 use std::path::Path;
 use thiserror::Error;
 
 use crate::elf::Elf;
+use crate::food::{Food, self};
 
 #[derive(Debug, Error)]
 pub enum ElfParserError {
@@ -15,28 +16,34 @@ pub enum ElfParserError {
 
 pub fn read_elves_from_file(filename: &str) -> Result<Vec<Elf>, ElfParserError> {
     let mut elves = vec![];
-    let lines = read_lines(filename)?;
+    let mut lines = read_lines(filename)?;
 
-    let mut current_food_items: Vec<i32> = vec![];
-
-    for line in lines.into_iter() {
-        let line = line?;
-
-        if line.is_empty() && !current_food_items.is_empty() {
-            elves.push(Elf::from(current_food_items));
-            current_food_items = vec![];
-            continue;
-        }
-
-        let calories = line.parse()?;
-        current_food_items.push(calories);
-    }
-
-    if !current_food_items.is_empty() {
-        elves.push(Elf::from(current_food_items));
+    while let Some(elf) = read_next_elf(&mut lines)? {
+        elves.push(elf);
     }
 
     Ok(elves)
+}
+
+fn read_next_elf<B:  BufRead>(lines: &mut Lines<B>) -> Result<Option<Elf>, ElfParserError> {
+    let mut food_items = vec![];
+
+    for line in lines {
+        let line = line?;
+
+        if line.is_empty() {
+            break;
+        }
+
+        let food_item: Food = line.try_into()?;
+        food_items.push(food_item);
+    }
+
+    if food_items.len() == 0 {
+        Ok(None)
+    } else {
+        Ok(Some(Elf::from(food_items)))
+    }
 }
 
 pub fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>

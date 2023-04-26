@@ -17,6 +17,10 @@ impl Elf {
     pub fn total_calories(&self) -> i32 {
         self.food_items.iter().map(|food| food.calories).sum()
     }
+
+    pub fn food_items(&self) -> &Vec<Food> {
+        &self.food_items
+    }
 }
 
 impl From<Vec<Food>> for Elf {
