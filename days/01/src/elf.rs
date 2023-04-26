@@ -1,6 +1,6 @@
 use crate::food::Food;
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Elf {
     food_items: Vec<Food>,
 }
