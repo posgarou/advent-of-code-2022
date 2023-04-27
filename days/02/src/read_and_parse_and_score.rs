@@ -1,5 +1,4 @@
-use crate::round::RoundAction;
-use crate::round_parser::{ParseRoundError, RoundParser};
+use crate::round_parser::{ParseRoundError, RoundActionParser, RoundParser};
 use crate::score_round::score_round;
 use std::fs::File;
 use std::io::{self, BufRead};
@@ -14,14 +13,20 @@ pub enum ParseAndScoreRoundError {
     ParseRoundError(#[from] ParseRoundError),
 }
 
-pub fn read_and_parse_and_score(filename: &str) -> Result<i32, ParseAndScoreRoundError> {
+pub fn read_and_parse_and_score<T>(
+    filename: &str,
+    parser: RoundParser<T>,
+) -> Result<i32, ParseAndScoreRoundError>
+where
+    T: RoundActionParser,
+{
     let file = std::fs::File::open(filename)?;
     let reader = std::io::BufReader::new(file);
 
     let mut total_score = 0;
     for line in reader.lines() {
         let line = line?;
-        let round = RoundParser::parse(line, parse_opponent_action, parse_user_action)?;
+        let round = parser.parse(line)?;
         total_score += score_round(&round);
     }
 
@@ -36,34 +41,28 @@ where
     Ok(io::BufReader::new(file).lines())
 }
 
-fn parse_user_action(s: &str) -> Result<RoundAction, ParseRoundError> {
-    match s {
-        "X" => Ok(RoundAction::Rock),
-        "Y" => Ok(RoundAction::Paper),
-        "Z" => Ok(RoundAction::Scissors),
-        _ => Err(ParseRoundError::InvalidUserActionError(s.to_string())),
-    }
-}
-
-fn parse_opponent_action(s: &str) -> Result<RoundAction, ParseRoundError> {
-    match s {
-        "A" => Ok(RoundAction::Rock),
-        "B" => Ok(RoundAction::Paper),
-        "C" => Ok(RoundAction::Scissors),
-        _ => Err(ParseRoundError::InvalidOpponentActionError(s.to_string())),
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::round_parser::ContextualRoundActionParser;
 
     #[test]
-    fn test_read_and_parse_and_score() {
+    fn test_default_read_and_parse_and_score() {
         let filename = "fixtures/rounds.txt";
+        let parser = RoundParser::default();
 
-        let score = read_and_parse_and_score(filename).unwrap();
+        let score = read_and_parse_and_score(filename, parser).unwrap();
 
         assert_eq!(score, 15);
+    }
+
+    #[test]
+    fn test_contextual_read_and_parse_and_score() {
+        let filename = "fixtures/rounds.txt";
+        let parser = RoundParser::new(ContextualRoundActionParser::new());
+
+        let score = read_and_parse_and_score(filename, parser).unwrap();
+
+        assert_eq!(score, 12);
     }
 }

@@ -1,15 +1,54 @@
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RoundAction {
     Rock,
     Paper,
     Scissors,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum RoundOutcome {
     Win,
     Loss,
     Draw,
+}
+
+// There are two other main approaches for implementing this logic.
+//
+// 1. Assign each action a number and use modulus arithmetic to determine the
+//    answer.
+// 2. Implement Ord for RoundAction
+//
+// Both of these approaches are more concise, but I think this approach is
+// easier to understand because it's more explicit.
+
+pub fn get_user_action_by_outcome(
+    opponent_action: RoundAction,
+    outcome: RoundOutcome,
+) -> RoundAction {
+    match (opponent_action, outcome) {
+        (RoundAction::Rock, RoundOutcome::Win) => RoundAction::Paper,
+        (RoundAction::Rock, RoundOutcome::Loss) => RoundAction::Scissors,
+        (RoundAction::Paper, RoundOutcome::Win) => RoundAction::Scissors,
+        (RoundAction::Paper, RoundOutcome::Loss) => RoundAction::Rock,
+        (RoundAction::Scissors, RoundOutcome::Win) => RoundAction::Rock,
+        (RoundAction::Scissors, RoundOutcome::Loss) => RoundAction::Paper,
+        _ => opponent_action,
+    }
+}
+
+pub fn get_opponent_action_by_outcome(
+    user_action: RoundAction,
+    outcome: RoundOutcome,
+) -> RoundAction {
+    match (user_action, outcome) {
+        (RoundAction::Rock, RoundOutcome::Win) => RoundAction::Scissors,
+        (RoundAction::Rock, RoundOutcome::Loss) => RoundAction::Paper,
+        (RoundAction::Paper, RoundOutcome::Win) => RoundAction::Rock,
+        (RoundAction::Paper, RoundOutcome::Loss) => RoundAction::Scissors,
+        (RoundAction::Scissors, RoundOutcome::Win) => RoundAction::Paper,
+        (RoundAction::Scissors, RoundOutcome::Loss) => RoundAction::Scissors,
+        _ => user_action,
+    }
 }
 
 #[derive(Debug)]
