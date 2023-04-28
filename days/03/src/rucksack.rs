@@ -14,6 +14,7 @@ pub enum RucksackGetCommonItemError {
     MultipleRepeatedCharError(Vec<char>),
 }
 
+#[derive(Debug)]
 pub struct RucksackPair {
     rucksacks: (Rucksack, Rucksack),
 }
@@ -39,6 +40,43 @@ impl RucksackPair {
                 repeated_chars,
             )),
         }
+    }
+
+    pub fn get_common_item_with(
+        &self,
+        others: (&RucksackPair, &RucksackPair),
+    ) -> Result<char, RucksackGetCommonItemError> {
+        let my_items = self.get_items();
+        let other_items = (others.0.get_items().to_vec(), others.1.get_items().to_vec());
+
+        let mut repeated_chars = Vec::new();
+
+        for item in my_items {
+            if other_items.0.contains(&item) && other_items.1.contains(&item) {
+                if repeated_chars.contains(&item) {
+                    continue;
+                }
+
+                repeated_chars.push(item);
+            }
+        }
+
+        match repeated_chars.len() {
+            0 => Err(RucksackGetCommonItemError::NoRepeatedItemError()),
+            1 => Ok(repeated_chars[0]),
+            _ => Err(RucksackGetCommonItemError::MultipleRepeatedCharError(
+                repeated_chars,
+            )),
+        }
+    }
+
+    pub fn get_items(&self) -> Vec<char> {
+        let mut left_items = self.rucksacks.0.get_items().clone();
+        let mut right_items = self.rucksacks.1.get_items().clone();
+
+        left_items.append(right_items.as_mut());
+
+        left_items
     }
 
     #[cfg(test)]

@@ -1,4 +1,4 @@
-use crate::rucksack::{RucksackGetCommonItemError, RucksackPair};
+use crate::rucksack::RucksackGetCommonItemError;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -9,14 +9,7 @@ pub enum PrioritizationError {
     GetItemPriorityError(char),
 }
 
-pub fn prioritize(pair: &RucksackPair) -> Result<i32, PrioritizationError> {
-    let repeated_char = pair.get_common_item()?;
-    let priority = get_item_priority(&repeated_char)?;
-
-    Ok(priority)
-}
-
-fn get_item_priority(item: &char) -> Result<i32, PrioritizationError> {
+pub fn get_item_priority(item: &char) -> Result<i32, PrioritizationError> {
     let priorities: Vec<char> = ('a'..='z').chain('A'..='Z').collect();
 
     priorities
