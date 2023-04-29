@@ -21,10 +21,18 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_read_and_apply_moves() {
+    fn test_read_and_apply_moves_one_at_a_time() {
         let result =
             read_and_apply_moves("fixtures/fixture.txt", MoverStrategy::OneAtATime).unwrap();
 
         assert_eq!(result, "CMZ");
+    }
+
+    #[test]
+    fn test_read_and_apply_moves_all_at_once() {
+        let result =
+            read_and_apply_moves("fixtures/fixture.txt", MoverStrategy::AllAtOnce).unwrap();
+
+        assert_eq!(result, "MCD");
     }
 }

@@ -151,10 +151,15 @@ impl CrateStacks {
             )));
         }
 
-        let mut crates_to_move: Vec<char> = from_stack
-            .drain(from_stack.len() - count as usize..)
-            .rev()
-            .collect();
+        let mut crates_to_move: Vec<char> = match strategy {
+            MoverStrategy::OneAtATime => from_stack
+                .drain(from_stack.len() - count as usize..)
+                .rev()
+                .collect(),
+            MoverStrategy::AllAtOnce => from_stack
+                .drain(from_stack.len() - count as usize..)
+                .collect(),
+        };
 
         let to_stack = &mut self.stacks[to as usize - 1];
 
@@ -181,7 +186,7 @@ pub mod tests {
     use super::*;
 
     #[test]
-    fn test_move() {
+    fn test_move_one_at_a_time() {
         let stacks = vec![vec!['A', 'B', 'C'], vec![], vec![]];
         let mut crate_stacks = CrateStacks { stacks: stacks };
 
@@ -191,6 +196,20 @@ pub mod tests {
 
         assert_eq!(crate_stacks.stacks[0], vec!['A']);
         assert_eq!(crate_stacks.stacks[1], vec!['C', 'B']);
+        assert_eq!(crate_stacks.stacks[2].len(), 0);
+    }
+
+    #[test]
+    fn test_move_all_at_once() {
+        let stacks = vec![vec!['A', 'B', 'C'], vec![], vec![]];
+        let mut crate_stacks = CrateStacks { stacks: stacks };
+
+        crate_stacks
+            .try_move(MoveCommand::new(2, 1, 2), MoverStrategy::AllAtOnce)
+            .unwrap();
+
+        assert_eq!(crate_stacks.stacks[0], vec!['A']);
+        assert_eq!(crate_stacks.stacks[1], vec!['B', 'C']);
         assert_eq!(crate_stacks.stacks[2].len(), 0);
     }
 
