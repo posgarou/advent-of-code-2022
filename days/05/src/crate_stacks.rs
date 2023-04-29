@@ -28,6 +28,12 @@ pub enum CrateMoveError {
     InvalidMoveCommand(String),
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum MoverStrategy {
+    OneAtATime,
+    AllAtOnce,
+}
+
 /// A set of crate stacks, represented as a vector of vectors of chars.
 ///
 /// # Examples
@@ -41,11 +47,11 @@ pub enum CrateMoveError {
 /// ```
 ///
 /// ```
-/// use day05::crate_stacks::{CrateStacks, MoveCommand};
+/// use day05::crate_stacks::{CrateStacks, MoveCommand, MoverStrategy};
 ///
 /// let mut stacks = CrateStacks::new(vec![vec!['A', 'B'], vec!['C']]);
 ///
-/// stacks.try_move(MoveCommand::new(1, 1, 2)).unwrap();
+/// stacks.try_move(MoveCommand::new(1, 1, 2), MoverStrategy::OneAtATime).unwrap();
 ///
 /// assert_eq!(stacks, CrateStacks::new(vec![vec!['A'], vec!['C', 'B']]));
 /// ```
@@ -72,26 +78,34 @@ impl CrateStacks {
     /// # Example
     ///
     /// ```
-    /// use day05::crate_stacks::{CrateStacks, MoveCommand};
+    /// use day05::crate_stacks::{CrateStacks, MoveCommand, MoverStrategy};
     ///
     /// let mut stacks = CrateStacks::new(vec![vec!['A', 'B'], vec!['C']]);
     ///
     /// stacks.try_moves(vec![
     ///    MoveCommand::new(1, 1, 2),
     ///   MoveCommand::new(1, 2, 1),
-    /// ]).unwrap();
+    /// ], MoverStrategy::OneAtATime).unwrap();
     ///
     /// assert_eq!(stacks, CrateStacks::new(vec![vec!['A', 'B'], vec!['C']]));
     /// ```
-    pub fn try_moves(&mut self, commands: Vec<MoveCommand>) -> Result<(), CrateMoveError> {
+    pub fn try_moves(
+        &mut self,
+        commands: Vec<MoveCommand>,
+        strategy: MoverStrategy,
+    ) -> Result<(), CrateMoveError> {
         for command in commands {
-            self.try_move(command)?;
+            self.try_move(command, strategy)?;
         }
 
         Ok(())
     }
 
-    pub fn try_move(&mut self, command: MoveCommand) -> Result<(), CrateMoveError> {
+    pub fn try_move(
+        &mut self,
+        command: MoveCommand,
+        strategy: MoverStrategy,
+    ) -> Result<(), CrateMoveError> {
         let MoveCommand { count, from, to } = command;
 
         println!("Moving {} crates from {} to {}", count, from, to);
@@ -171,7 +185,9 @@ pub mod tests {
         let stacks = vec![vec!['A', 'B', 'C'], vec![], vec![]];
         let mut crate_stacks = CrateStacks { stacks: stacks };
 
-        crate_stacks.try_move(MoveCommand::new(2, 1, 2)).unwrap();
+        crate_stacks
+            .try_move(MoveCommand::new(2, 1, 2), MoverStrategy::OneAtATime)
+            .unwrap();
 
         assert_eq!(crate_stacks.stacks[0], vec!['A']);
         assert_eq!(crate_stacks.stacks[1], vec!['C', 'B']);
